@@ -28,7 +28,6 @@ func (c *CBC) Encrypt(dst, src []byte) {
 	iv := c.iv
 	s := 0
 	e := c.blockSize
-
 	for i := 0; i < len(src)/c.blockSize; i++ {
 		//fmt.Printf("encrypting block %d-%d\n", s, e)
 		Xor(dst[s:e], src[s:e], iv)
@@ -44,16 +43,13 @@ func (c *CBC) Decrypt(dst, src []byte) {
 	e := len(src)
 	for s := e - c.blockSize; s >= 0; s -= c.blockSize {
 		//fmt.Printf("decrypting block %d-%d\n", s, e)
-		out := dst[s:e]
-		in := src[s:e]
-		c.thing.Decrypt(out, in)
-
+		c.thing.Decrypt(dst[s:e], src[s:e])
 		if s == 0 {
 			iv = c.iv
 		} else {
 			iv = src[(s - c.blockSize):s]
 		}
-		Xor(out, out, iv)
+		Xor(dst[s:e], dst[s:e], iv)
 		e = s
 	}
 }

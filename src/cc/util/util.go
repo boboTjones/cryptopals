@@ -1,3 +1,7 @@
+/*
+Stuff I keep using.
+*/
+
 package util
 
 import (
@@ -15,6 +19,7 @@ func HexStringToByte(str string) []byte {
 	_, err := hex.Decode(foo, []byte(str))
 	if err != nil {
 		fmt.Println("Something bad happened.")
+		os.Exit(1)
 	}
 	return foo
 }
@@ -27,14 +32,27 @@ func DeXor(str []byte, char byte) []byte {
 	return x
 }
 
+func Xor(dst, in, iv []byte) int {
+	n := len(in)
+	if len(iv) < n {
+		n = len(iv)
+	}
+	for i := 0; i < n; i++ {
+		dst[i] = in[i] ^ iv[i]
+	}
+	return n
+}
+
 func SlurpFromFile(filePath string) []byte {
 	f, err := os.Open(filePath)
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
+		os.Exit(1)
 	}
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
+		os.Exit(1)
 	}
 	return data
 }
@@ -42,12 +60,14 @@ func SlurpFromFile(filePath string) []byte {
 func SlurpFromURL(t string) []byte {
 	r, err := http.Get(t)
 	if err != nil {
-		fmt.Println("Something bad happened.")
+		fmt.Println("Something bad happened: %v", err)
+		os.Exit(1)
 	}
 	defer r.Body.Close()
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("Something bad happened.")
+		fmt.Printf("Something bad happened: %v", err)
+		os.Exit(1)
 	}
 	return b
 }
@@ -74,6 +94,8 @@ func Chunk(blob []byte, csize int) [][]byte {
 	return fin
 }
 
+// Courtesy of Andy Schmitz.
+
 func AndyChunk(blob []byte, csize int) [][]byte {
 	var fin = make([][]byte, 0)
 	for i := 0; i < len(blob); i += csize {
@@ -85,19 +107,3 @@ func AndyChunk(blob []byte, csize int) [][]byte {
 	}
 	return fin
 }
-
-func Xor(dst, in, iv []byte) int {
-	n := len(in)
-	if len(iv) < n {
-		n = len(iv)
-	}
-	for i := 0; i < n; i++ {
-		dst[i] = in[i] ^ iv[i]
-	}
-	return n
-}
-
-//func SlurpAndDecode(filePath string) []byte {
-//	var f, d bytes.Buffer
-//	f.Write(SlurpFromFile())
-//}
