@@ -5,9 +5,11 @@ Stuff I keep using.
 package util
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -106,4 +108,19 @@ func AndyChunk(blob []byte, csize int) [][]byte {
 		fin = append(fin, blob[i:e])
 	}
 	return fin
+}
+
+func RandString(n int) []byte {
+	chars := []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789987654321123456789abcdefghijklmnopqrstuvwxyz")
+	ret := make([]byte, n)
+	x := make([]byte, n)
+	_, err := io.ReadFull(rand.Reader, x)
+	if err != nil {
+		fmt.Println("rand: ", err)
+	}
+	max := byte(len(chars))
+	for i, c := range x {
+		ret[i] = chars[c%max]
+	}
+	return ret
 }
