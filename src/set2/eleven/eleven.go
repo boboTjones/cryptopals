@@ -36,7 +36,6 @@ const BlockSize = 16
 func chance(src []byte) []byte {
 	// random key
 	key := util.RandString(16)
-	iv := util.RandString(16)
 	// random bytes.
 	// Jesus. Really?
 	s1 := rand.NewSource(time.Now().UnixNano())
@@ -49,25 +48,52 @@ func chance(src []byte) []byte {
 	in = append(in, tail...)
 	// guess i gotta pad it, too
 	if len(in)%BlockSize != 0 {
-		pddr := new(util.Padder)
-		pddr.BlockSize = BlockSize
-		pddr.Data = &bytes.Buffer{}
+		pddr := util.NewPadder(16)
 		pddr.Data.Write(in)
 		pddr.Padfoot()
 		in = pddr.Data.Bytes()
 	}
 	out := make([]byte, len(in))
-	cbc := util.NewCBC(iv, key)
-	cbc.Encrypt(out, in)
+	switch rand.Intn(2) {
+	case 1:
+		fmt.Println("Cheating: CBC")
+		iv := util.RandString(16)
+		cbc := util.NewCBC(iv, key)
+		cbc.Encrypt(out, in)
+	default:
+		fmt.Println("Cheating: ECB")
+		ecb := util.NewECB(key)
+		ecb.Encrypt(out, in)
+	}
 	return out
+}
+
+func compare(c []byte, n int) int {
+	var ret int
+	v := util.AndyChunk(c, n)
+	x := len(v) - 1
+	for y := 0; y < x; y++ {
+		hi := v[y]
+		bi := v[y+1:]
+		for _, b := range bi {
+			for i, h := range hi {
+				if h == b[i] {
+					ret++
+				}
+			}
+		}
+	}
+	return ret
 }
 
 func main() {
 	//src := util.SlurpFromFile("/Users/erin/codebase/cryptochallenges/randomtxt.txt")
-	src := make([]byte, 40)
+	src := make([]byte, 160)
 	for i, _ := range src {
 		src[i] = byte(0x41)
 	}
-	out := chance(src)
-	fmt.Println(out)
+	for i := 0; i < 100; i++ {
+		out := chance(src)
+		fmt.Printf("Score: %d\n", compare(out, 16))
+	}
 }

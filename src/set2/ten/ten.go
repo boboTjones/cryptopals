@@ -45,9 +45,7 @@ func main() {
 	src := getPlainText("/Users/erin/encme.txt")
 
 	if len(src)%16 != 0 {
-		pddr := new(util.Padder)
-		pddr.Data = &bytes.Buffer{}
-		pddr.BlockSize = 16
+		pddr := util.NewPadder(16)
 		pddr.Data.Write(src)
 		pddr.Padfoot()
 		src = pddr.Data.Bytes()

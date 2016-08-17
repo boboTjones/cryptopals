@@ -7,6 +7,11 @@ type Padder struct {
 	BlockSize int
 }
 
+func NewPadder(bs int) *Padder {
+	d := &bytes.Buffer{}
+	return &Padder{Data: d, BlockSize: bs}
+}
+
 // It'd be nice if this was in-place, but I don't feel like re-writing it.
 
 func (self *Padder) Padfoot() {
