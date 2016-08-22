@@ -24,7 +24,6 @@ tells you which one is happening.
 package main
 
 import (
-	"bytes"
 	"cc/util"
 	"fmt"
 	"math/rand"
@@ -36,6 +35,7 @@ const BlockSize = 16
 func chance(src []byte) []byte {
 	// random key
 	key := util.RandString(16)
+
 	// random bytes.
 	// Jesus. Really?
 	s1 := rand.NewSource(time.Now().UnixNano())
@@ -46,6 +46,7 @@ func chance(src []byte) []byte {
 	tail := util.RandString(r2.Intn(8) + 2)
 	in = append(in, src...)
 	in = append(in, tail...)
+
 	// guess i gotta pad it, too
 	if len(in)%BlockSize != 0 {
 		pddr := util.NewPadder(16)
@@ -53,7 +54,9 @@ func chance(src []byte) []byte {
 		pddr.Padfoot()
 		in = pddr.Data.Bytes()
 	}
+
 	out := make([]byte, len(in))
+
 	switch rand.Intn(2) {
 	case 1:
 		fmt.Println("Cheating: CBC")
@@ -94,6 +97,6 @@ func main() {
 	}
 	for i := 0; i < 100; i++ {
 		out := chance(src)
-		fmt.Printf("Score: %d\n", compare(out, 16))
+		fmt.Printf("Score: %d\n", util.Compare(out, 16))
 	}
 }

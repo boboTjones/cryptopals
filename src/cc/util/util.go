@@ -5,6 +5,7 @@ Stuff I keep using.
 package util
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
@@ -122,5 +123,46 @@ func RandString(n int) []byte {
 	for i, c := range x {
 		ret[i] = chars[c%max]
 	}
+	return ret
+}
+
+func Compare(c []byte, n int) int {
+	var ret int
+	chunks := Chunk(c, n)
+	x := len(chunks) - 1
+	for i := 0; i < x; i++ {
+		if bytes.Equal(chunks[i], chunks[i+1]) {
+			//fmt.Printf("MOOSE: %d and %d match\n", i, i+1)
+			ret++
+		} else {
+			//fmt.Printf("%d and %d do not match\n", i, i+1)
+		}
+		//fmt.Printf("%v\n", chunks[i])
+		//fmt.Printf("%v\n\n", chunks[i+1])
+	}
+	return ret
+}
+
+func ReComp(c []byte, n int) int {
+	var ret int
+	fmt.Println(c)
+	src := AndyChunk(c, n)
+
+	for x := 0; x < len(src)-1; x++ {
+		hi := src[x]
+		//fmt.Printf("Comparing %d\t%v...\n", x, hi)
+		for y, s := range src {
+			if x == y {
+				continue
+			}
+			//fmt.Printf("...to %d\t\t%v\n", y, s)
+			for i, v := range s {
+				if hi[i] == v {
+					ret++
+				}
+			}
+		}
+	}
+	fmt.Println(ret)
 	return ret
 }
