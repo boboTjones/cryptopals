@@ -8,59 +8,44 @@ import (
 )
 
 var unKey []byte
+var unString = util.Decode64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
+var altString = unString
 
-func makeadict(size int, c ...byte) [][]byte {
+func makeadict(in []byte, c []byte) [][]byte {
+	//fmt.Printf("Got %d bytes\n", len(in))
 	ret := make([][]byte, 0)
 	for i := 33; i < 126; i++ {
-		fill := []byte(strings.Repeat("A", size))
-		if c != nil {
-			fill = append(fill, c[0])
+		fill := make([]byte, 0)
+		fill = append(fill, in...)
+		for _, v := range c {
+			fill = append(fill, v)
 		}
-		fmt.Println("DI a  ", fill)
 		fill = append(fill, byte(i))
-		fin := lite(fill, unKey)
-		fmt.Println("DI b  ", fin[:size])
+		//fmt.Printf("%d in: %q\n", len(fill), fill)
+		fin := myFunc(fill, unKey)
 		ret = append(ret, fin)
 	}
 	return ret
 }
 
-func detect(src []byte) int {
-	return util.Compare(src, 16)
-}
-
 func myFunc(src, key []byte) []byte {
 	//fmt.Println("IN  ", string(src))
 	// unknown-string
-	us := util.Decode64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
-	src = append(src, us...)
+
+	src = append(src, altString...)
 	// pad
+	fmt.Println(string(src))
 	if len(src)%16 != 0 {
 		pddr := util.NewPadder(16)
 		pddr.Data.Write(src)
 		pddr.Padfoot()
 		src = pddr.Data.Bytes()
 	}
-	fmt.Printf("%q\n", src)
+	//fmt.Printf("%q\n", src)
 	out := make([]byte, len(src))
 	ecb := util.NewECB(key)
 	ecb.Encrypt(out, src)
 	//fmt.Printf("inter\t%v\n", out[:16])
-	return out
-}
-
-func lite(src, key []byte) []byte {
-	// pad
-	if len(src)%16 != 0 {
-		pddr := util.NewPadder(16)
-		pddr.Data.Write(src)
-		pddr.Padfoot()
-		src = pddr.Data.Bytes()
-	}
-	fmt.Printf("%q\n", src)
-	out := make([]byte, len(src))
-	ecb := util.NewECB(key)
-	ecb.Encrypt(out, src)
 	return out
 }
 
@@ -83,30 +68,32 @@ func gbs(key []byte) int {
 
 func main() {
 	unKey = util.RandString(16)
-	fmt.Println(string(unKey))
-	fmt.Println(lite([]byte("AAAAAAAAAAAAAAARo"), unKey))
-
 	bs := gbs(unKey)
-	fmt.Printf("Found block size %d\n", bs)
+	//fmt.Printf("Found block size %d\n", bs)
+	o := bs - 1
 
-	in := []byte(strings.Repeat("A", bs-1))
+	in := []byte(strings.Repeat("A", o))
 	out := myFunc(in, unKey)
-	//fmt.Println(util.Chunk(out, 16))
+	dec := make([]byte, 0)
+	dict := makeadict(in, dec)
 
-	dict := makeadict(bs - 1)
-	e := bs
-	for {
+	for len(dec) != len(unString) {
 		for k, v := range dict {
-			fmt.Printf("%q\n", (k + 33))
-
-			fmt.Println("OU  ", out[:e])
-			if bytes.Equal(v[:e], out) {
+			//fmt.Printf("%q\n", (k + 33))
+			//fmt.Printf("%d\t%v\n", len(v[:bs]), v[:bs])
+			//fmt.Printf("%d\t%v\n", len(out[:bs]), out[:bs])
+			if bytes.Equal(v[:bs], out[:bs]) {
 				c := byte(k + 33)
-				fmt.Printf("MOOSE\t%q\n", c)
-				e++
-				makeadict(bs-1, c)
+				dec = append(dec, c)
+				fmt.Printf("MOOSE\t%q\n", dec)
+				//o--
+				altString = unString[len(dec):]
+				in = []byte(strings.Repeat("A", o))
+				makeadict(in, dec)
+				out = myFunc(in, unKey)
 				break
 			}
 		}
 	}
+	fmt.Println(string(dec))
 }
