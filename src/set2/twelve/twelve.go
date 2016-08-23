@@ -61,8 +61,7 @@ func gbs(key []byte) int {
 func main() {
 	unKey = util.RandString(16)
 	bs := gbs(unKey)
-	o := bs - 1
-	in := []byte(strings.Repeat("A", o))
+	in := []byte(strings.Repeat("A", bs-1))
 	out := myFunc(in, unKey)
 	dec := make([]byte, 0)
 	dict := makeadict(in, dec)
@@ -74,7 +73,6 @@ func main() {
 				dec = append(dec, c)
 				fmt.Printf("%q\n", dec)
 				altString = unString[len(dec):]
-				in = []byte(strings.Repeat("A", o))
 				makeadict(in, dec)
 				out = myFunc(in, unKey)
 				break
