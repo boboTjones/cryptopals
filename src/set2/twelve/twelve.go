@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"cc/util"
 	"fmt"
 	"strings"
@@ -8,13 +9,17 @@ import (
 
 var unKey []byte
 
-func makeadict(key []byte, size int) [][]byte {
+func makeadict(size int, c ...byte) [][]byte {
 	ret := make([][]byte, 0)
-	for i := 66; i < 113; i++ {
+	for i := 33; i < 126; i++ {
 		fill := []byte(strings.Repeat("A", size))
+		if c != nil {
+			fill = append(fill, c[0])
+		}
+		fmt.Println("DI a  ", fill)
 		fill = append(fill, byte(i))
-		fmt.Println(fill)
-		fin := myFunc(fill, key)
+		fin := lite(fill, unKey)
+		fmt.Println("DI b  ", fin[:size])
 		ret = append(ret, fin)
 	}
 	return ret
@@ -25,10 +30,10 @@ func detect(src []byte) int {
 }
 
 func myFunc(src, key []byte) []byte {
+	//fmt.Println("IN  ", string(src))
 	// unknown-string
-	us := []byte("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
+	us := util.Decode64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
 	src = append(src, us...)
-
 	// pad
 	if len(src)%16 != 0 {
 		pddr := util.NewPadder(16)
@@ -36,9 +41,11 @@ func myFunc(src, key []byte) []byte {
 		pddr.Padfoot()
 		src = pddr.Data.Bytes()
 	}
+	fmt.Printf("%q\n", src)
 	out := make([]byte, len(src))
 	ecb := util.NewECB(key)
 	ecb.Encrypt(out, src)
+	//fmt.Printf("inter\t%v\n", out[:16])
 	return out
 }
 
@@ -50,6 +57,7 @@ func lite(src, key []byte) []byte {
 		pddr.Padfoot()
 		src = pddr.Data.Bytes()
 	}
+	fmt.Printf("%q\n", src)
 	out := make([]byte, len(src))
 	ecb := util.NewECB(key)
 	ecb.Encrypt(out, src)
@@ -75,23 +83,30 @@ func gbs(key []byte) int {
 
 func main() {
 	unKey = util.RandString(16)
+	fmt.Println(string(unKey))
+	fmt.Println(lite([]byte("AAAAAAAAAAAAAAARo"), unKey))
 
 	bs := gbs(unKey)
 	fmt.Printf("Found block size %d\n", bs)
+
 	in := []byte(strings.Repeat("A", bs-1))
 	out := myFunc(in, unKey)
+	//fmt.Println(util.Chunk(out, 16))
 
-	for i := bs - 1; i < 184; i++ {
-		dict := makeadict(unKey, i)
+	dict := makeadict(bs - 1)
+	e := bs
+	for {
 		for k, v := range dict {
-			e := i + 1
-			fmt.Printf("%q\n", (k + 66))
-			fmt.Println("DI  ", v[:e])
+			fmt.Printf("%q\n", (k + 33))
+
 			fmt.Println("OU  ", out[:e])
-			//if bytes.Equal(v[:e], out[:e]) {
-			//	fmt.Println("MOOSE")
-			//}
+			if bytes.Equal(v[:e], out) {
+				c := byte(k + 33)
+				fmt.Printf("MOOSE\t%q\n", c)
+				e++
+				makeadict(bs-1, c)
+				break
+			}
 		}
 	}
-
 }
