@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -20,32 +21,39 @@ func qsParse(qs string) []uint8 {
 
 }
 
+// Assuming this is leading up to using JSON?
 func profile_for(email string) string {
 	var ret []string
+	// eating & and =
+	// will cause a lookup to fail.
+	nopes := []string{"&", "="}
+	for _, v := range nopes {
+		email = strings.Replace(email, v, "", -1)
+	}
+
 	// ew
 	tmp := make(map[string]interface{})
 	tmp["email"] = email
 	tmp["uid"] = 10
 	tmp["role"] = "user"
-	out, err := json.Marshal(tmp)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%T\n", tmp)
-	fmt.Printf("%T\n", out)
 
-	// ew ew ew
-	for k, v := range out {
-		//	ret = append(ret, k+"="+v)
-		fmt.Printf("%v\n", string(k))
-		fmt.Printf("%v\n", string(v))
+	// ew
+	for k, v := range tmp {
+		switch x := v.(type) {
+		case int:
+			ret = append(ret, k+"="+strconv.Itoa(x))
+		case float64:
+			ret = append(ret, k+"="+strconv.FormatFloat(x, 'f', 2, 32))
+		default:
+			ret = append(ret, k+"="+v.(string))
+		}
 	}
 	return strings.Join(ret, "&")
 }
 
 func main() {
 	qp := qsParse("foo=bar&baz=qux&zap=zazzle")
-	fmt.Printf("%T\n", qp)
-	pq := profile_for("foo@bar.com")
+	fmt.Printf("%q\n", qp)
+	pq := profile_for("foo@bar.com&role=admin")
 	fmt.Printf("%s\n", pq)
 }

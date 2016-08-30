@@ -11,7 +11,7 @@ var unKey []byte
 var unString = util.Decode64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
 var altString = unString
 
-func makeadict(in []byte, c []byte) [][]byte {
+func makeadict(in, c []byte) [][]byte {
 	ret := make([][]byte, 0)
 	for i := 10; i < 126; i++ {
 		fill := make([]byte, 0)
