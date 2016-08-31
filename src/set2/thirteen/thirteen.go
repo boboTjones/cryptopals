@@ -2,33 +2,50 @@ package main
 
 import (
 	"cc/util"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-func qsParse(qs string) string {
-	ret := `{`
+type Profile struct {
+	Email string `json:"email"`
+	Uid   int    `json:"uid"`
+	Role  string `json:"role"`
+}
+
+func qsParse(qs string) []uint8 {
+	out := new(Profile)
 	for _, v := range strings.Split(qs, "&") {
 		tmp := strings.Split(v, "=")
 		if len(tmp) != 2 {
-			fmt.Printf("Found garbage %v\n", tmp)
+			fmt.Printf("Found garbage %q\n", tmp)
 			continue
 		}
 		switch tmp[0] {
 		case "email":
-			ret += `"email":"` + tmp[1] + `", `
+			out.Email = tmp[1]
 		case "uid":
-			ret += `"uid": "` + tmp[1] + `", `
+			x, err := strconv.Atoi(tmp[1])
+			if err != nil {
+				panic(err)
+			}
+			out.Uid = x
 		case "role":
-			ret += `"role: "` + tmp[1] + `"}"`
+			out.Role = tmp[1]
 		default:
-			fmt.Printf("Found garbage %v\n", tmp)
+			fmt.Printf("Found garbage %q\n", tmp)
 		}
 	}
+	ret, err := json.Marshal(out)
+	if err != nil {
+		panic(err)
+	}
 	return ret
+
 }
 
+// Assuming this is leading up to using JSON?
 func profile_for(email string) string {
 	var ret []string
 
@@ -37,24 +54,8 @@ func profile_for(email string) string {
 	for _, v := range nopes {
 		email = strings.Replace(email, v, "", -1)
 	}
-
-	// ew
-	tmp := make(map[string]interface{})
-	tmp["email"] = email
-	tmp["uid"] = 10
-	tmp["role"] = "user"
-
-	// ew
-	for k, v := range tmp {
-		switch x := v.(type) {
-		case int:
-			ret = append(ret, k+"="+strconv.Itoa(x))
-		case float64:
-			ret = append(ret, k+"="+strconv.FormatFloat(x, 'f', 2, 32))
-		default:
-			ret = append(ret, k+"="+v.(string))
-		}
-	}
+	ret = append(ret, "email="+email)
+	ret = append(ret, "uid=10&role=user")
 	return strings.Join(ret, "&")
 }
 
@@ -62,20 +63,23 @@ func profile_for(email string) string {
 
 func encrypt(key, in []byte) []byte {
 	// Because I'm lazy. XXX TODO(erin)
-	cbc := util.NewCBC(key, key)
+	ebc := util.NewECB(key)
 	pddr := util.NewPadder(16)
 	pddr.Data.Write(in)
 	pddr.Padfoot()
+	for i, v := range util.Chunk(pddr.Data.Bytes(), 16) {
+		fmt.Printf("%d\t%q\n", i, v)
+	}
 	ret := make([]byte, pddr.Data.Len())
-	cbc.Encrypt(ret, pddr.Data.Bytes())
+	ebc.Encrypt(ret, pddr.Data.Bytes())
 	return ret
 }
 
 func decrypt(key, in []byte) []byte {
 	ret := make([]byte, len(in))
 	// Because I'm lazy. XXX TODO(erin)
-	cbc := util.NewCBC(key, key)
-	cbc.Decrypt(ret, in)
+	ecb := util.NewECB(key)
+	ecb.Decrypt(ret, in)
 	return ret
 }
 
@@ -83,9 +87,6 @@ func main() {
 	//qp := qsParse("foo=bar&baz=qux&zap=zazzle")
 	//fmt.Printf("%q\n", qp)
 	pq := profile_for("erin@f.bar.com")
-	for _, v := range util.Chunk([]byte(pq), 16) {
-		fmt.Printf("%q\n", v)
-	}
 
 	//  Generate a random AES key, then:
 	key := util.RandString(16)
@@ -100,17 +101,13 @@ func main() {
 	// ciphertexts) and the ciphertexts themselves, make a role=admin profile.
 	// What?
 	fmt.Println("Attack!")
-	a1 := profile_for("erin@f.bar.com")
-	fmt.Println(a1)
+	a1 := profile_for("eri@f.bar.com")
 	c1 := encrypt(key, []byte(a1))
 	b1 := c1[0:32]
-	a2 := profile_for("er@bar.com") + "admin"
-	fmt.Println(a2)
+	a2 := profile_for("XXXXXXXXX") + "admin           "
 	c2 := encrypt(key, []byte(a2))
-	fec := decrypt(key, c2)
-	fmt.Println(string(fec))
-	e := (len(c2) - 32)
-	fmt.Println(e)
+	e := len(c2) - 16
+
 	b2 := c2[e:]
 	as := append(b1, b2...)
 	o := decrypt(key, as)
