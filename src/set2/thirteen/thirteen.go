@@ -45,7 +45,6 @@ func qsParse(qs string) []uint8 {
 
 }
 
-// Assuming this is leading up to using JSON?
 func profile_for(email string) string {
 	var ret []string
 
@@ -59,10 +58,7 @@ func profile_for(email string) string {
 	return strings.Join(ret, "&")
 }
 
-//  Now, two more easy functions.
-
 func encrypt(key, in []byte) []byte {
-	// Because I'm lazy. XXX TODO(erin)
 	ebc := util.NewECB(key)
 	pddr := util.NewPadder(16)
 	pddr.Data.Write(in)
@@ -77,7 +73,6 @@ func encrypt(key, in []byte) []byte {
 
 func decrypt(key, in []byte) []byte {
 	ret := make([]byte, len(in))
-	// Because I'm lazy. XXX TODO(erin)
 	ecb := util.NewECB(key)
 	ecb.Decrypt(ret, in)
 	return ret
@@ -99,7 +94,6 @@ func main() {
 
 	// Using only the user input to profile_for() (as an oracle to generate "valid"
 	// ciphertexts) and the ciphertexts themselves, make a role=admin profile.
-	// What?
 	fmt.Println("Attack!")
 	a1 := profile_for("eri@f.bar.com")
 	c1 := encrypt(key, []byte(a1))
