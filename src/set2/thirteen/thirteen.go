@@ -2,44 +2,33 @@ package main
 
 import (
 	"cc/util"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-type Profile struct {
-	Email string `json:"email"`
-	Uid   int    `json:"uid"`
-	Role  string `json:"role"`
-}
-
-func qsParse(qs string) []uint8 {
-	out := new(Profile)
+func qsParse(qs string) string {
+	ret := `{`
 	for _, v := range strings.Split(qs, "&") {
 		tmp := strings.Split(v, "=")
+		if len(tmp) != 2 {
+			fmt.Printf("Found garbage %v\n", tmp)
+			continue
+		}
 		switch tmp[0] {
 		case "email":
-			out.Email = tmp[1]
+			ret += `"email":"` + tmp[1] + `", `
 		case "uid":
-			x, err := strconv.Atoi(tmp[1])
-			if err != nil {
-				panic(err)
-			}
-			out.Uid = x
+			ret += `"uid": "` + tmp[1] + `", `
 		case "role":
-			out.Role = tmp[1]
+			ret += `"role: "` + tmp[1] + `"}"`
+		default:
+			fmt.Printf("Found garbage %v\n", tmp)
 		}
 	}
-	ret, err := json.Marshal(out)
-	if err != nil {
-		panic(err)
-	}
 	return ret
-
 }
 
-// Assuming this is leading up to using JSON?
 func profile_for(email string) string {
 	var ret []string
 
