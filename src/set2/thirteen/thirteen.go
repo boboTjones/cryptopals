@@ -8,13 +8,27 @@ import (
 	"strings"
 )
 
+type Profile struct {
+	Email string `json:"email"`
+	Uid   int    `json:"uid"`
+	Role  string `json:"role"`
+}
+
 func qsParse(qs string) []uint8 {
-	out := make(map[string]interface{})
+	out := new(Profile)
 	for _, v := range strings.Split(qs, "&") {
 		tmp := strings.Split(v, "=")
-		fmt.Println(tmp)
-		if len(tmp) > 1 {
-			out[tmp[0]] = tmp[1]
+		switch tmp[0] {
+		case "email":
+			out.Email = tmp[1]
+		case "uid":
+			x, err := strconv.Atoi(tmp[1])
+			if err != nil {
+				panic(err)
+			}
+			out.Uid = x
+		case "role":
+			out.Role = tmp[1]
 		}
 	}
 	ret, err := json.Marshal(out)
@@ -28,8 +42,8 @@ func qsParse(qs string) []uint8 {
 // Assuming this is leading up to using JSON?
 func profile_for(email string) string {
 	var ret []string
+
 	// eating & and =
-	// will cause a lookup to fail.
 	nopes := []string{"&", "="}
 	for _, v := range nopes {
 		email = strings.Replace(email, v, "", -1)
@@ -98,11 +112,17 @@ func main() {
 	// What?
 	fmt.Println("Attack!")
 	a1 := profile_for("erin@f.bar.com")
+	fmt.Println(a1)
 	c1 := encrypt(key, []byte(a1))
 	b1 := c1[0:32]
 	a2 := profile_for("er@bar.com") + "admin"
+	fmt.Println(a2)
 	c2 := encrypt(key, []byte(a2))
-	b2 := c2[(len(c2) - 16):]
+	fec := decrypt(key, c2)
+	fmt.Println(string(fec))
+	e := (len(c2) - 32)
+	fmt.Println(e)
+	b2 := c2[e:]
 	as := append(b1, b2...)
 	o := decrypt(key, as)
 	fmt.Printf("%q\n", qsParse(string(o)))
