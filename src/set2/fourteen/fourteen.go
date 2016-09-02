@@ -5,51 +5,74 @@ import (
 	"bytes"
 	"cc/util"
 	"fmt"
+	"math"
 	"math/rand"
 	"time"
 )
 
-func mkSrc(rp, ac, tb []byte) []byte {
-	src := make([]byte, 0)
-	src = append(src, rp...)
-	src = append(src, ac...)
-	src = append(src, tb...)
-	return src
+var unKey []byte
+var unString = util.Decode64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
+var altString = unString
+
+func makeadict(in, c []byte) [][]byte {
+	ret := make([][]byte, 0)
+	for i := 10; i < 126; i++ {
+		fill := make([]byte, 0)
+		fill = append(fill, in...)
+		fill = append(fill, c...)
+		fill = append(fill, byte(i))
+		fin := myFunc(fill)
+		ret = append(ret, fin)
+	}
+	return ret
+}
+
+func myFunc(src []byte) []byte {
+	// random-prefix || attacker-controlled || target-bytes
+	src = append(src, altString...)
+	if len(src)%16 != 0 {
+		pddr := util.NewPadder(16)
+		pddr.Data.Write(src)
+		pddr.Padfoot()
+		src = pddr.Data.Bytes()
+	}
+	out := make([]byte, len(src))
+	ecb := util.NewECB(unKey)
+	ecb.Encrypt(out, src)
+	return out
 }
 
 func main() {
-	key := util.RandString(16)
 	//Now generate a random count of random bytes and prepend this string to every plaintext.
 	// AES-128-ECB(random-prefix || attacker-controlled || target-bytes, random-key)
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 	// random-prefix
 	rp := util.RandString(r1.Intn(33) + 2)
-	// attacker-controlled
-	ac := bytes.Repeat([]byte("A"), 15)
-	// target-bytes
-	tb := util.Decode64("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
-	spare := tb
 
-	in := mkSrc(rp, ac, spare)
-	ecb := util.NewECB(key)
-	out := ecb.Orakkl(in)
+	// attacker-controlled, padding out random to full block
+	x := 16 - math.Mod(float64(len(rp)), 16)
+	ac := bytes.Repeat([]byte("A"), int(x)-1)
+
+	// What if I change the block size?
+	bs := len(ac) + len(rp) + 1
+	fmt.Printf("Using block size %d\n", bs)
+	unKey = util.RandString(bs)
+
+	// random-prefix || attacker-controlled
+	in := append(rp, ac...)
+	out := myFunc(in)
 
 	dec := make([]byte, 0)
-	dict := ecb.Dict(rp, ac, tb, dec)
-	fmt.Println("WTF ", dict[len(dict)-1:])
+	dict := makeadict(in, dec)
 
-	for len(dec) != len(tb) {
+	for len(dec) != len(unString) {
 		for k, v := range dict {
-			fmt.Printf("dict\t%v\n", v[:16])
-			fmt.Printf("out \t%v\n", out[:16])
-			if bytes.Equal(v[:16], out[:16]) {
+			if bytes.Equal(v[:bs], out[:bs]) {
 				dec = append(dec, byte(k+10))
 				fmt.Printf("Found %q\n", dec)
-				spare = spare[len(dec):]
-				in = mkSrc(rp, ac, spare)
-				dict = ecb.Dict(rp, ac, tb, dec)
-				out = ecb.Orakkl(in)
+				altString = unString[len(dec):]
+				out = myFunc(in)
 				break
 			}
 		}
