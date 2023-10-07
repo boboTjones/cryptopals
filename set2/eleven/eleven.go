@@ -73,7 +73,7 @@ func chance(src []byte) []byte {
 
 func compare(c []byte, n int) int {
 	var ret int
-	v := util.AndyChunk(c, n)
+	v := util.Chunk(c, n)
 	x := len(v) - 1
 	for y := 0; y < x; y++ {
 		hi := v[y]

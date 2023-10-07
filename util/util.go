@@ -97,9 +97,9 @@ func Chunk(blob []byte, csize int) [][]byte {
 	return fin
 }
 
-// Courtesy of Andy Schmitz.
+// Courtesy of aschmitz.
 
-func AndyChunk(blob []byte, csize int) [][]byte {
+func Chunk(blob []byte, csize int) [][]byte {
 	var fin = make([][]byte, 0)
 	for i := 0; i < len(blob); i += csize {
 		e := i + csize
@@ -146,7 +146,7 @@ func Compare(c []byte, n int) int {
 func ReComp(c []byte, n int) int {
 	var ret int
 	fmt.Println(c)
-	src := AndyChunk(c, n)
+	src := Chunk(c, n)
 
 	for x := 0; x < len(src)-1; x++ {
 		hi := src[x]
