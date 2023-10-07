@@ -22,8 +22,8 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
 	"fmt"
+	"util"
 )
 
 func getEncData() []byte {

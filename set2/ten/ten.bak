@@ -22,7 +22,7 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
+	"util"
 	"crypto/aes"
 	"fmt"
 )

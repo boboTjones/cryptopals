@@ -24,10 +24,10 @@ tells you which one is happening.
 package main
 
 import (
-	"cc/util"
 	"fmt"
 	"math/rand"
 	"time"
+	"util"
 )
 
 const BlockSize = 16

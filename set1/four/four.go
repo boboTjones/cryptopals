@@ -12,10 +12,10 @@ package main
 
 import (
 	"bytes"
-	"cfm"
 	"encoding/hex"
 	"fmt"
 	"sort"
+	"util"
 )
 
 type Result struct {
@@ -55,11 +55,11 @@ func deXor(str []byte, char byte) []byte {
 func main() {
 	nl := uint8(10)
 	//encryptedTextURL := "https://gist.github.com/tqbf/3132713/raw/40da378d42026a0731ee1cd0b2bd50f66aabac5b/gistfile1.txt"
-	// encryptedText := cfm.FetchStuff(encryptedTextURL)
-	encryptedText := cfm.Slurp("/Users/erin/codebase/cryptochallenges/src/cc/four/gistfile1.txt")
-	text := cfm.FetchStuff("http://www.gutenberg.org/files/205/205-h/205-h.htm")
-	leMap := cfm.MapMaker(text)
-	cMap := cfm.CharCount(text)
+	// encryptedText := util.FetchStuff(encryptedTextURL)
+	encryptedText := util.Slurp("/Users/erin/codebase/cryptochallenges/src/four/gistfile1.txt")
+	text := util.FetchStuff("http://www.gutenberg.org/files/205/205-h/205-h.htm")
+	leMap := util.MapMaker(text)
+	cMap := util.CharCount(text)
 	results := Results{}
 
 	lines := bytes.Split(encryptedText, []byte{nl})

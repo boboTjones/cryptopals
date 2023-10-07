@@ -3,11 +3,11 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
 	"fmt"
 	"math"
 	"math/rand"
 	"time"
+	"util"
 )
 
 var unKey []byte

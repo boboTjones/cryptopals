@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
 	"fmt"
 	"strings"
+	"util"
 )
 
 var unKey []byte

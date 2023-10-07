@@ -19,10 +19,10 @@ Encrypt a bunch of stuff using your repeating-key XOR function. Get a feel for i
 package main
 
 import (
-	"cc/util"
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"util"
 )
 
 var plainText, fileName, keyString string

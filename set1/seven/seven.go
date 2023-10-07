@@ -22,11 +22,11 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
 	"crypto/aes"
 	"flag"
 	"fmt"
 	"os"
+	"util"
 )
 
 var fileName string

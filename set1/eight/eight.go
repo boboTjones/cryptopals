@@ -15,11 +15,11 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
 	"flag"
 	"fmt"
 	"os"
 	"sort"
+	"util"
 )
 
 var fileName string

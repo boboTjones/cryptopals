@@ -1,11 +1,11 @@
 package main
 
 import (
-	"cc/util"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
+	"util"
 )
 
 type Profile struct {

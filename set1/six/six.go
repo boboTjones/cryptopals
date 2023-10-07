@@ -2,10 +2,10 @@ package main
 
 import (
 	"bytes"
-	"cc/util"
 	"flag"
 	"fmt"
 	"sort"
+	"util"
 )
 
 var fileName string
