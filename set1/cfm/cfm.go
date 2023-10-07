@@ -1,23 +1,23 @@
 package cfm
 
 import (
-    "fmt"
-    "net/http"
-    "io/ioutil"
-    "sort"
-    "os"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"sort"
 )
 
 type CharSum struct {
-    Char byte
-    Total int
+	Char  byte
+	Total int
 }
 
 type CharMap []CharSum
-type sortByTotal struct { CharMap }
+type sortByTotal struct{ CharMap }
 
-func (c CharMap) Len() int { return len(c) }
-func (c CharMap) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
+func (c CharMap) Len() int               { return len(c) }
+func (c CharMap) Swap(i, j int)          { c[i], c[j] = c[j], c[i] }
 func (s sortByTotal) Less(i, j int) bool { return s.CharMap[i].Total > s.CharMap[j].Total }
 
 // maybe put this in another util? maybe make this whole file a util?
@@ -35,7 +35,7 @@ func FetchStuff(t string) []byte {
 }
 
 func Slurp(filename string) []byte {
-    f, err := os.Open(filename)
+	f, err := os.Open(filename)
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
 	}
@@ -43,7 +43,7 @@ func Slurp(filename string) []byte {
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
 	}
-    return data
+	return data
 }
 
 func CharCount(text []byte) (m map[byte]int) {
@@ -51,20 +51,20 @@ func CharCount(text []byte) (m map[byte]int) {
 	for _, t := range text {
 		m[t] += 1
 	}
-    return
+	return
 }
 
 func sortMap(in map[byte]int) CharMap {
-    cmap := CharMap{}
-    for c, t := range(in) {
-        cmap = append(cmap, CharSum{c, t})
-    }
-    sort.Sort(sortByTotal{cmap})
-    return cmap
+	cmap := CharMap{}
+	for c, t := range in {
+		cmap = append(cmap, CharSum{c, t})
+	}
+	sort.Sort(sortByTotal{cmap})
+	return cmap
 }
 
-func MapMaker(text []byte) CharMap {     
-    return sortMap(CharCount(text))
+func MapMaker(text []byte) CharMap {
+	return sortMap(CharCount(text))
 }
 
 /*
