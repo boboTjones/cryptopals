@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"sort"
-	"util"
 )
 
 var fileName string

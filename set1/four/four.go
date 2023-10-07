@@ -14,8 +14,8 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"sort"
-	"util"
 )
 
 type Result struct {

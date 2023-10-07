@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"strconv"
 	"strings"
-	"util"
 )
 
 type Profile struct {

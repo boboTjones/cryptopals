@@ -22,7 +22,7 @@ package main
 
 import (
 	"bytes"
-	"util"
+	"github.com/bobotjones/cryptopals/util"
 	"crypto/aes"
 	"fmt"
 )

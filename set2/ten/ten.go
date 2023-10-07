@@ -23,7 +23,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"util"
+	"github.com/bobotjones/cryptopals/util"
 )
 
 func getEncData() []byte {

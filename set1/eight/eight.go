@@ -17,9 +17,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"os"
 	"sort"
-	"util"
 )
 
 var fileName string

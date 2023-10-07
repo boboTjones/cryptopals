@@ -25,9 +25,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"math/rand"
 	"time"
-	"util"
 )
 
 const BlockSize = 16

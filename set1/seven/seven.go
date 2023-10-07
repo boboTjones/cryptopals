@@ -25,8 +25,8 @@ import (
 	"crypto/aes"
 	"flag"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"os"
-	"util"
 )
 
 var fileName string

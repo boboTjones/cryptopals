@@ -22,7 +22,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"util"
+	"github.com/bobotjones/cryptopals/util"
 )
 
 var plainText, fileName, keyString string

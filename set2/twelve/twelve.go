@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"strings"
-	"util"
 )
 
 var unKey []byte

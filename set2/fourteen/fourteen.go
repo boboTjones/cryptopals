@@ -4,10 +4,10 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/bobotjones/cryptopals/util"
 	"math"
 	"math/rand"
 	"time"
-	"util"
 )
 
 var unKey []byte
