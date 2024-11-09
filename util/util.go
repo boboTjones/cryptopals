@@ -99,7 +99,7 @@ func Chunk(blob []byte, csize int) [][]byte {
 
 // Courtesy of aschmitz.
 
-func Chunk(blob []byte, csize int) [][]byte {
+func AshChunk(blob []byte, csize int) [][]byte {
 	var fin = make([][]byte, 0)
 	for i := 0; i < len(blob); i += csize {
 		e := i + csize

@@ -3,7 +3,6 @@ package util
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"fmt"
 )
 
 type ECB struct {
