@@ -3,7 +3,7 @@
 
 One of the 60-character strings at:
 
-  https://gist.github.com/3132713
+	https://gist.github.com/3132713
 
 has been encrypted by single-character XOR. Find it. (Your code from
 #3 should help.)
@@ -13,10 +13,15 @@ package main
 import (
 	"bytes"
 	"encoding/hex"
+	"flag"
 	"fmt"
-	"github.com/bobotjones/cryptopals/util"
+	"os"
 	"sort"
+
+	"github.com/bobotjones/cryptopals/util"
 )
+
+var fileName string
 
 type Result struct {
 	original  []byte
@@ -52,17 +57,33 @@ func deXor(str []byte, char byte) []byte {
 	return x
 }
 
+func init() {
+	flag.StringVar(&fileName, "f", fileName, "File to decrypt")
+}
+
 func main() {
+	flag.Parse()
+	data := bytes.NewBuffer(make([]byte, 0))
+
+	if fileName != "" {
+		d, err := util.SlurpFromFile(fileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		data.Write(d)
+	} else {
+		fmt.Println("need input")
+		os.Exit(1)
+	}
+
 	nl := uint8(10)
-	//encryptedTextURL := "https://gist.github.com/tqbf/3132713/raw/40da378d42026a0731ee1cd0b2bd50f66aabac5b/gistfile1.txt"
-	// encryptedText := util.FetchStuff(encryptedTextURL)
-	encryptedText := util.Slurp("/Users/erin/codebase/cryptochallenges/src/four/gistfile1.txt")
 	text := util.FetchStuff("http://www.gutenberg.org/files/205/205-h/205-h.htm")
 	leMap := util.MapMaker(text)
 	cMap := util.CharCount(text)
 	results := Results{}
 
-	lines := bytes.Split(encryptedText, []byte{nl})
+	lines := bytes.Split(data.Bytes(), []byte{nl})
 
 	for i, l := range lines {
 		for _, z := range leMap {
@@ -82,6 +103,6 @@ func main() {
 	sort.Sort(sortByTotal{results})
 
 	for _, result := range results {
-		fmt.Printf("Score for line %v with key %v(%s): %v\nText: %s\n\n", result.lineNo, result.key, string(result.key), result.total, string(result.decrypted))
+		fmt.Printf("Score for line %v with key %v(%s): %v\n%s\n", result.lineNo, result.key, string(result.key), result.total, hex.Dump(result.decrypted))
 	}
 }
