@@ -3,7 +3,7 @@
 
 At the following URL are a bunch of hex-encoded ciphertexts:
 
-  https://gist.github.com/3132928
+	https://gist.github.com/3132928
 
 One of them is ECB encrypted. Detect it.
 
@@ -17,9 +17,10 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/bobotjones/cryptopals/util"
 	"os"
 	"sort"
+
+	"github.com/bobotjones/cryptopals/util"
 )
 
 var fileName string
@@ -93,7 +94,11 @@ func main() {
 	data := bytes.NewBuffer(make([]byte, 0))
 
 	if fileName != "" {
-		d := util.SlurpFromFile(fileName)
+		d, err := util.SlurpFromFile(fileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		data.Write(d)
 	} else {
 		fmt.Println("need input")

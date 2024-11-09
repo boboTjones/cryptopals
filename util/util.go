@@ -46,33 +46,33 @@ func Xor(dst, in, iv []byte) int {
 	return n
 }
 
-func SlurpFromFile(filePath string) []byte {
+func SlurpFromFile(filePath string) ([]byte, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
-	return data
+	return data, nil
 }
 
-func SlurpFromURL(t string) []byte {
+func SlurpFromURL(t string) ([]byte, error) {
 	r, err := http.Get(t)
 	if err != nil {
 		fmt.Println("Something bad happened: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
 	defer r.Body.Close()
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("Something bad happened: %v", err)
-		os.Exit(1)
+		return nil, err
 	}
-	return b
+	return b, nil
 }
 
 func Decode64(str string) []byte {
