@@ -37,21 +37,18 @@ func (line Lines) Swap(i, j int)              { line[i], line[j] = line[j], line
 func (s sortLinesByScore) Less(i, j int) bool { return s.Lines[i].Score > s.Lines[j].Score }
 
 func twoStep(in []byte) []string {
-	out := make([]string, 0)
-	if len(in) > 0 {
-		junk := bytes.Split(in, nil)
-		x := len(junk)
-		tmp := make([][]byte, 0)
+	out := make([]string, 0, (len(in)+1)/2)
 
-		for i := 0; i < x; i += 2 {
-			q := bytes.Join(junk[i:i+2], nil)
-			tmp = append(tmp, q)
-		}
-
-		for _, v := range tmp {
-			out = append(out, string(v))
-		}
+	// Process bytes in pairs
+	for i := 0; i < len(in)-1; i += 2 {
+		out = append(out, string(in[i:i+2]))
 	}
+
+	// Handle last byte if input length is odd
+	if len(in)%2 != 0 {
+		out = append(out, string(in[len(in)-1:]))
+	}
+
 	return out
 }
 
@@ -74,13 +71,23 @@ func compare(c []string, n int) int {
 }
 
 func chunk(blob []string, csize int) [][]string {
-	var fin = make([][]string, 0)
-	x := 0
-	for i := 0; i < len(blob); i += csize {
-		fd := []string(blob[i:(x + csize)])
-		fin = append(fin, fd)
-		x += csize
+	if len(blob) == 0 || csize <= 0 {
+		return [][]string{}
 	}
+
+	// Calculate number of chunks needed
+	numChunks := (len(blob) + csize - 1) / csize
+	fin := make([][]string, 0, numChunks)
+
+	// Process chunks
+	for i := 0; i < len(blob); i += csize {
+		end := i + csize
+		if end > len(blob) {
+			end = len(blob)
+		}
+		fin = append(fin, blob[i:end])
+	}
+
 	return fin
 }
 
