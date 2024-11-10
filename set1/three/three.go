@@ -1,5 +1,20 @@
 package main
 
+/*
+3. Single-character XOR Cipher
+The hex encoded string:
+      1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736
+... has been XOR'd against a single character. Find the key, decrypt
+the message.
+Write code to do this for you.
+Here's one way:
+a. Find a large sample of English text. Something from Project
+Gutenberg should do nicely. Use it to generate a character frequency
+map.
+b. Evaluate each potential key by scoring the resulting plaintext
+against the frquency map. The key with the best score is your match.
+*/
+
 import (
 	"encoding/hex"
 	"fmt"
