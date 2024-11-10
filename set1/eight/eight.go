@@ -36,7 +36,7 @@ func (line Lines) Len() int                   { return len(line) }
 func (line Lines) Swap(i, j int)              { line[i], line[j] = line[j], line[i] }
 func (s sortLinesByScore) Less(i, j int) bool { return s.Lines[i].Score > s.Lines[j].Score }
 
-func twoStep(in []byte) []string {
+func TwoStep(in []byte) []string {
 	out := make([]string, 0, (len(in)+1)/2)
 
 	// Process bytes in pairs
@@ -118,11 +118,10 @@ func main() {
 
 	for i, s := range src {
 		if len(s) > 0 {
-			str := twoStep(s)
+			str := TwoStep(s)
 			score := compare(str, 16)
 			result = append(result, Line{Number: i, Score: score})
 		}
-
 	}
 
 	sort.Sort(sortLinesByScore{result})

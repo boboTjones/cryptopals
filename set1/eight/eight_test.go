@@ -41,9 +41,9 @@ func TestTwoStep(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := twoStep(tt.input)
+			result := TwoStep(tt.input)
 			if !reflect.DeepEqual(result, tt.expected) {
-				t.Errorf("twoStep(%v) = %v, want %v", tt.input, result, tt.expected)
+				t.Errorf("TwoStep(%v) = %v, want %v", tt.input, result, tt.expected)
 			}
 		})
 	}

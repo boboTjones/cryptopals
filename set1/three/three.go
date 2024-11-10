@@ -1,25 +1,3 @@
-/*
-3. Single-character XOR Cipher
-
-The hex encoded string:
-
-      1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736
-
-... has been XOR'd against a single character. Find the key, decrypt
-the message.
-
-Write code to do this for you.
-
-Here's one way:
-
-a. Find a large sample of English text. Something from Project
-Gutenberg should do nicely. Use it to generate a character frequency
-map.
-
-b. Evaluate each potential key by scoring the resulting plaintext
-against the frquency map. The key with the best score is your match.
-
-*/
 package main
 
 import (
@@ -27,43 +5,39 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-    "sort"
+	"sort"
 )
 
 type Result struct {
-    key byte
+	key   byte
 	text  []byte
+	score float64 // Changed from int to float64 for relative frequencies
 	total int
 }
 
 type Results []*Result
 
-func (r Results) Len() int { return len(r) }
+func (r Results) Len() int      { return len(r) }
 func (r Results) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
 
-type sortByTotal struct { Results }
+type sortByScore struct{ Results }
 
-func (s sortByTotal) Less(i, j int) bool { return s.Results[i].total < s.Results[j].total }
+func (s sortByScore) Less(i, j int) bool { return s.Results[i].score < s.Results[j].score }
 
-func someText() []byte {
-	r, err := http.Get("http://www.gutenberg.org/files/205/205-h/205-h.htm")
-	if err != nil {
-		fmt.Println("Something bad happened.")
-	}
-	defer r.Body.Close()
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Println("Something bad happened.")
-	}
-	return b
-}
-
-func mapMaker(text []byte) map[byte]int {
-	x := make(map[byte]int)
+// Modified to return both the frequency map and total count
+func mapMaker(text []byte) (map[byte]float64, int) {
+	freqs := make(map[byte]float64)
+	total := 0
 	for _, t := range text {
-		x[t] += 1
+		freqs[t]++
+		total++
 	}
-	return x
+
+	// Convert to relative frequencies
+	for k := range freqs {
+		freqs[k] = freqs[k] / float64(total)
+	}
+	return freqs, total
 }
 
 func deFunk(str string) []byte {
@@ -83,28 +57,64 @@ func deXor(str []byte, char byte) []byte {
 	return x
 }
 
-func main() {
+func getSomeText() []byte {
+	r, err := http.Get("http://www.gutenberg.org/files/205/205-h/205-h.htm")
+	if err != nil {
+		fmt.Println("Something bad happened.")
+	}
+	defer r.Body.Close()
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("Something bad happened.")
+	}
+	return b
+}
 
+func main() {
 	results := Results{}
-	cfm := mapMaker(someText())
+
+	// Get reference text and calculate relative frequencies
+	rFreqs, _ := mapMaker(getSomeText())
+
+	// The target ciphertext
 	w := deFunk("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736")
 
+	// Try each possible key
 	for z := 32; z < 126; z++ {
-		results = append(results, &Result{uint8(z), deXor(w, uint8(z)), 0})
+		results = append(results, &Result{
+			key:   uint8(z),
+			text:  deXor(w, uint8(z)),
+			score: 0,
+		})
 	}
 
+	// Score each attempt using relative frequencies
 	for k, v := range results {
-		q := mapMaker(v.text)
-		y := 0
-		for l, _ := range q {
-			y += cfm[l]
-			results[k].total = y
+		dFreqs, total := mapMaker(v.text)
+		score := float64(0)
+
+		// Compare frequency distributions
+		for char, dFreq := range dFreqs {
+			if rFreq, exists := rFreqs[char]; exists {
+				// Add up the differences in frequencies
+				diff := dFreq - rFreq
+				score += diff * diff // Square the difference to penalize larger deviations
+			} else {
+				// Penalize characters that don't appear in reference text
+				score += dFreq * dFreq
+			}
 		}
+		results[k].total = total
+		results[k].score = score
 	}
-    
-    sort.Sort(sortByTotal{results})
-    
-    for _, v := range(results) {
-        fmt.Printf("%s (%v): %d\n", string(v.key), v.key, v.total)
-    }
+
+	sort.Sort(sortByScore{results})
+
+	// Print top 10 results
+	for i, v := range results[:10] {
+		fmt.Printf("Text input size: %d\n", v.total)
+		fmt.Printf("Result %d - Key: %c (0x%02x) Score: %f \n", i+1, v.key, v.key, v.score)
+		fmt.Printf("Decrypted text: %s\n", string(v.text))
+		fmt.Printf("====================================\n")
+	}
 }
